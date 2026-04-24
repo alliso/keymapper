@@ -9,6 +9,7 @@ import (
 
 	"github.com/alliso/keymapper/internal/config"
 	"github.com/alliso/keymapper/internal/gamepad"
+	"github.com/alliso/keymapper/internal/learn"
 	"github.com/alliso/keymapper/internal/mapper"
 )
 
@@ -27,6 +28,8 @@ func main() {
 	switch cmd {
 	case "run":
 		os.Exit(cmdRun(args))
+	case "learn":
+		os.Exit(cmdLearn(args))
 	case "list":
 		os.Exit(cmdList(args))
 	case "-h", "--help", "help":
@@ -42,12 +45,14 @@ func usage() {
 	fmt.Fprint(os.Stderr, `keymapper — mapea botones de un mando a teclas del teclado.
 
 Uso:
-  keymapper run  [--config config.yaml] [--tap-ms 15]
+  keymapper run   [--config config.yaml] [--tap-ms 15]
+  keymapper learn [--output config.yaml] [--gamepad 0]
   keymapper list
 
 Comandos:
   run    Carga el YAML y arranca el loop de mapeo (Ctrl+C para salir).
-  list   Lista los joysticks detectados por SDL (índice, nombre, GUID, botones).
+  learn  Wizard interactivo que genera un config.yaml preguntando tecla por botón.
+  list   Lista los mandos detectados por SDL (índice, nombre, GUID).
 `)
 }
 
@@ -63,6 +68,19 @@ func cmdRun(args []string) int {
 		return 1
 	}
 	if err := mapper.Run(cfg, time.Duration(*tapMs)*time.Millisecond); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		return 1
+	}
+	return 0
+}
+
+func cmdLearn(args []string) int {
+	fs := flag.NewFlagSet("learn", flag.ExitOnError)
+	outPath := fs.String("output", "config.yaml", "Ruta donde escribir el YAML generado.")
+	gpIndex := fs.Int("gamepad", 0, "Índice del mando (sólo informativo durante el wizard).")
+	_ = fs.Parse(args)
+
+	if err := learn.Run(*outPath, *gpIndex); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return 1
 	}
