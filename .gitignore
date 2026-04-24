@@ -8,6 +8,12 @@
 *.so
 *.dylib
 
+# Local build output
+/keymapper
+
+# Local user config (generado por `keymapper learn` o editado a mano)
+/config.yaml
+
 # Test binary, built with `go test -c`
 *.test
 

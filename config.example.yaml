@@ -1,0 +1,23 @@
+# Índice del mando si hay varios conectados (0 por defecto).
+# Usa `keymapper list` para ver los índices disponibles.
+gamepad_index: 0
+
+# Cada botón del mando se referencia por su índice físico como "bN".
+# Cada botón define dos acciones independientes:
+#   on_press   — tecla que se emite al pulsar el botón   (opcional)
+#   on_release — tecla que se emite al soltar el botón   (opcional)
+# Omitir una clave = no emitir nada en ese flanco.
+#
+# Nombres de tecla soportados:
+#   a-z, 0-9, space, enter, tab, escape, up, down, left, right, f1..f12.
+mappings:
+  b0:
+    on_press: space
+    on_release: space       # misma tecla en ambos flancos → comportamiento "palanca"
+  b1:
+    on_press: enter         # solo al pulsar
+  b2:
+    on_press: e
+    on_release: r           # teclas distintas por flanco
+  b3:
+    on_release: q           # solo al soltar
