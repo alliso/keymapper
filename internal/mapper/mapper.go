@@ -66,18 +66,17 @@ func Run(cfg *config.Config, tapHold time.Duration) error {
 			if e.Which != instanceID {
 				continue
 			}
-			var code int
-			var ok bool
+			var codes []int
 			switch e.Type {
 			case sdl.JOYBUTTONDOWN:
-				code, ok = onPress[e.Button]
+				codes = onPress[e.Button]
 			case sdl.JOYBUTTONUP:
-				code, ok = onRelease[e.Button]
+				codes = onRelease[e.Button]
 			}
-			if !ok {
+			if len(codes) == 0 {
 				continue
 			}
-			if err := kb.Tap(code); err != nil {
+			if err := kb.TapSequence(codes); err != nil {
 				fmt.Fprintf(os.Stderr, "tap %s falló: %v\n", gamepad.ButtonLabel(e.Button), err)
 			}
 
@@ -93,9 +92,20 @@ func Run(cfg *config.Config, tapHold time.Duration) error {
 	}
 }
 
-func resolveTables(cfg *config.Config, numButtons int) (onPress, onRelease map[uint8]int, err error) {
-	onPress = make(map[uint8]int)
-	onRelease = make(map[uint8]int)
+func resolveTables(cfg *config.Config, numButtons int) (onPress, onRelease map[uint8][]int, err error) {
+	onPress = make(map[uint8][]int)
+	onRelease = make(map[uint8][]int)
+	resolveSeq := func(btnName, edge string, names []string) ([]int, error) {
+		codes := make([]int, len(names))
+		for i, name := range names {
+			code, err := keymap.Resolve(name)
+			if err != nil {
+				return nil, fmt.Errorf("mappings[%s].%s[%d]: %w", btnName, edge, i, err)
+			}
+			codes[i] = code
+		}
+		return codes, nil
+	}
 	for btnName, b := range cfg.Mappings {
 		idx, err := gamepad.ParseButtonName(btnName)
 		if err != nil {
@@ -104,19 +114,19 @@ func resolveTables(cfg *config.Config, numButtons int) (onPress, onRelease map[u
 		if int(idx) >= numButtons {
 			return nil, nil, fmt.Errorf("mappings[%s]: el mando solo tiene %d botones (0..%d)", btnName, numButtons, numButtons-1)
 		}
-		if b.OnPress != "" {
-			code, err := keymap.Resolve(b.OnPress)
+		if len(b.OnPress) > 0 {
+			codes, err := resolveSeq(btnName, "on_press", b.OnPress)
 			if err != nil {
-				return nil, nil, fmt.Errorf("mappings[%s].on_press: %w", btnName, err)
+				return nil, nil, err
 			}
-			onPress[idx] = code
+			onPress[idx] = codes
 		}
-		if b.OnRelease != "" {
-			code, err := keymap.Resolve(b.OnRelease)
+		if len(b.OnRelease) > 0 {
+			codes, err := resolveSeq(btnName, "on_release", b.OnRelease)
 			if err != nil {
-				return nil, nil, fmt.Errorf("mappings[%s].on_release: %w", btnName, err)
+				return nil, nil, err
 			}
-			onRelease[idx] = code
+			onRelease[idx] = codes
 		}
 	}
 	return onPress, onRelease, nil

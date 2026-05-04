@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/term"
@@ -83,12 +84,12 @@ func Run(outputPath string, gamepadIndex int) error {
 	}
 	finalize := func() {
 		label := gamepad.ButtonLabel(currentIdx)
-		if currentBinding.OnPress == "" && currentBinding.OnRelease == "" {
+		if len(currentBinding.OnPress) == 0 && len(currentBinding.OnRelease) == 0 {
 			fmt.Printf("  → %s saltado (sin teclas).\r\n", label)
 		} else {
 			cfg.Mappings[label] = currentBinding
 			fmt.Printf("  → %s guardado: press=%q release=%q\r\n",
-				label, currentBinding.OnPress, currentBinding.OnRelease)
+				label, strings.Join(currentBinding.OnPress, " "), strings.Join(currentBinding.OnRelease, " "))
 		}
 		currentBinding = config.Binding{}
 		state = stateWaitButton
@@ -143,11 +144,11 @@ func Run(outputPath string, gamepadIndex int) error {
 				case actionAssign:
 					fmt.Printf("%s\r\n", key)
 					if state == stateWaitPressKey {
-						currentBinding.OnPress = key
+						currentBinding.OnPress = config.Keys{key}
 						promptEdge("on_release")
 						state = stateWaitReleaseKey
 					} else {
-						currentBinding.OnRelease = key
+						currentBinding.OnRelease = config.Keys{key}
 						finalize()
 					}
 				case actionSkipEdge:

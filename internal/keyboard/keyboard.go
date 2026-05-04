@@ -36,3 +36,13 @@ func (k *Keyboard) Tap(keycode int) error {
 	}
 	return nil
 }
+
+// TapSequence emits each keycode as an independent press + release, in order.
+func (k *Keyboard) TapSequence(codes []int) error {
+	for _, c := range codes {
+		if err := k.Tap(c); err != nil {
+			return err
+		}
+	}
+	return nil
+}
