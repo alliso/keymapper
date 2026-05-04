@@ -66,6 +66,20 @@ Los botones se referencian por **índice físico** `bN` (tal como los publica el
 
 Nombres de tecla soportados: `a`-`z`, `0`-`9`, `space`, `enter`/`return`, `tab`, `escape`/`esc`, `up`, `down`, `left`, `right`, `f1`..`f12`.
 
+#### Secuencias de teclas
+
+Cada flanco (`on_press` / `on_release`) acepta tanto una sola tecla como una **lista** que se emite tap a tap, en orden:
+
+```yaml
+mappings:
+  b4:
+    on_press: [g, g]                  # vim: ir al inicio
+  b5:
+    on_press: [escape, h, i, enter]   # macro: emite "hi" y enter
+```
+
+Cada elemento de la lista se emite con su propio ciclo press/release respetando `--tap-ms`. El wizard `learn` **no** soporta secuencias: graba una tecla por flanco. Para definir una secuencia, edita el YAML a mano.
+
 ## Flags
 
 - `run --config PATH` (default `config.yaml`)

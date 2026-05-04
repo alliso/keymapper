@@ -8,6 +8,12 @@ gamepad_index: 0
 #   on_release — tecla que se emite al soltar el botón   (opcional)
 # Omitir una clave = no emitir nada en ese flanco.
 #
+# Cada flanco acepta dos formatos:
+#   - una sola tecla:    on_press: space
+#   - una secuencia:     on_press: [g, g]   (se emiten en orden, tap a tap)
+# El wizard `learn` solo graba una tecla por flanco; las secuencias se editan
+# a mano en este YAML.
+#
 # Nombres de tecla soportados:
 #   a-z, 0-9, space, enter, tab, escape, up, down, left, right, f1..f12.
 mappings:
@@ -21,3 +27,7 @@ mappings:
     on_release: r           # teclas distintas por flanco
   b3:
     on_release: q           # solo al soltar
+  b4:
+    on_press: [g, g]        # secuencia: dos teclas en orden (vim "ir al inicio")
+  b5:
+    on_press: [escape, h, i, enter]   # macro: pulsar emite "hi" y enter
